@@ -1,0 +1,6 @@
+[
+  {
+    "type": "sqlite",
+    "path": "c:\\xampp\\htdocs\\MballahTech\\role-permissions-app\\database\\database.sqlite"
+  }
+]
