@@ -3,6 +3,7 @@
 namespace App\Livewire\Auth;
 
 use App\Models\User;
+use App\Models\Satuan;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -14,12 +15,10 @@ use Livewire\Component;
 class Register extends Component
 {
     public string $name = '';
-
     public string $email = '';
-
     public string $password = '';
-
     public string $password_confirmation = '';
+    public $satuan_id = null;
 
     /**
      * Handle an incoming registration request.
@@ -30,14 +29,23 @@ class Register extends Component
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
+            'satuan_id' => ['required','exists:satuans,id'],
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
+        $validated['active'] = false;
 
         event(new Registered(($user = User::create($validated))));
 
         Auth::login($user);
 
-        $this->redirect(route('dashboard', absolute: false), navigate: true);
+        $this->redirect(route('activation.pending', absolute: false), navigate: true);
+    }
+
+    public function render()
+    {
+        return view('livewire.auth.register', [
+            'satuans' => Satuan::orderBy('nama')->get(),
+        ]);
     }
 }

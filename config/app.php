@@ -67,6 +67,9 @@ return [
 
     'timezone' => 'UTC',
 
+    // UI timezone used to interpret browser datetime-local inputs
+    'ui_timezone' => env('APP_UI_TIMEZONE', 'Asia/Jakarta'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration

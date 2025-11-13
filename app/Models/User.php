@@ -8,6 +8,7 @@ use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class User extends Authenticatable
 {
@@ -20,9 +21,13 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
+        'satuan_id',
         'name',
         'email',
         'password',
+        'avatar',
+        'active',
+        'last_login_at'
     ];
 
     /**
@@ -45,6 +50,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'active' => 'boolean',
+            'last_login_at' => 'datetime',
         ];
     }
 
@@ -58,5 +65,13 @@ class User extends Authenticatable
             ->take(2)
             ->map(fn ($word) => Str::substr($word, 0, 1))
             ->implode('');
+    }
+
+    /**
+     * The satuan this user belongs to.
+     */
+    public function satuan(): BelongsTo
+    {
+        return $this->belongsTo(Satuan::class);
     }
 }

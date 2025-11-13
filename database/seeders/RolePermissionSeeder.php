@@ -16,90 +16,115 @@ class RolePermissionSeeder extends Seeder
         // Reset cached roles and permissions
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Create permissions
-        $permissions = [
-            // User permissions
-            'user.view',
-            'user.create',
-            'user.edit',
-            'user.delete',
-            
-            // Product permissions
-            'product.view',
-            'product.create',
-            'product.edit',
-            'product.delete',
-            
-            // Category permissions
-            'category.view',
-            'category.create',
-            'category.edit',
-            'category.delete',
-            
-            // Role & Permission management
-            'role.view',
-            'role.create',
-            'role.edit',
-            'role.delete',
-            'permission.view',
-            'permission.assign',
+        // Define permissions grouped by domain
+        $groups = [
+            'user' => ['view','create','edit','delete'],
+            'role' => ['view','create','edit','delete'],
+            'permission' => ['view','assign'],
+            'satuan' => ['view','create','edit','delete'],
+            'proposal' => ['view','create','edit','delete'],
+            'annualbudget' => ['view','create','edit','delete'],
+            'approval' => ['view','create','edit','delete'],
+            'realization' => ['view','create','edit','delete'],
+            'attachment' => ['view','create','delete'],
+            'pengumuman' => ['view','create','edit','delete'],
         ];
 
-        foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+        $allPermissions = [];
+        foreach ($groups as $prefix => $actions) {
+            foreach ($actions as $action) {
+                $allPermissions[] = "$prefix.$action";
+            }
         }
 
-        // Create roles and assign permissions
-        $superAdminRole = Role::create(['name' => 'Super Admin']);
-        $superAdminRole->givePermissionTo(Permission::all());
+        // Create or update permissions idempotently
+        foreach ($allPermissions as $name) {
+            Permission::findOrCreate($name);
+        }
 
-        $adminRole = Role::create(['name' => 'Admin']);
-        $adminRole->givePermissionTo([
-            'user.view', 'user.create', 'user.edit',
-            'product.view', 'product.create', 'product.edit', 'product.delete',
-            'category.view', 'category.create', 'category.edit', 'category.delete',
+        // Create roles idempotently
+        $superAdminRole = Role::findOrCreate('Super Admin');
+        // $adminRole = Role::findOrCreate('Admin');
+        $perencanaRole = Role::findOrCreate('Perencana');
+        $verifikatorRole = Role::findOrCreate('Verifikator');
+        // $pimpinanRole = Role::findOrCreate('Pimpinan');
+        // $bendaharaRole = Role::findOrCreate('Bendahara');
+
+        // Assign permissions
+        $superAdminRole->syncPermissions(Permission::all());
+
+        // $adminRole->syncPermissions([
+        //     // Full management for core modules
+        //     'user.view','user.create','user.edit','user.delete',
+        //     'role.view','role.create','role.edit','role.delete',
+        //     'permission.view','permission.assign',
+
+        //     // Domain modules
+        //     'satuan.view','satuan.create','satuan.edit','satuan.delete',
+        //     'proposal.view','proposal.create','proposal.edit','proposal.delete',
+        //     'annualbudget.view','annualbudget.create','annualbudget.edit','annualbudget.delete',
+        //     'approval.view','approval.create','approval.edit','approval.delete',
+        //     'realization.view','realization.create','realization.edit','realization.delete',
+        //     'attachment.view','attachment.create','attachment.delete',
+        // ]);
+
+        $perencanaRole->syncPermissions([
+            'proposal.view','proposal.create','proposal.edit',
+            'annualbudget.view','annualbudget.create','annualbudget.edit',
+            'approval.view','approval.create',
+            'attachment.view','attachment.create',
         ]);
 
-        $managerRole = Role::create(['name' => 'Manager']);
-        $managerRole->givePermissionTo([
-            'product.view', 'product.create', 'product.edit',
-            'category.view', 'category.create', 'category.edit',
-            'user.view',
+        $verifikatorRole->syncPermissions([
+            'proposal.view',
+            'approval.view','approval.create','approval.edit',
         ]);
 
-        $userRole = Role::create(['name' => 'User']);
-        $userRole->givePermissionTo([
-            'product.view',
-            'category.view',
-        ]);
+        // $pimpinanRole->syncPermissions([
+        //     'proposal.view',
+        //     'approval.view','approval.create',
+        // ]);
 
-        // Create users and assign roles
-        $superAdmin = User::create([
-            'name' => 'Super Admin',
-            'email' => 'superadmin@example.com',
-            'password' => Hash::make('password'),
-        ]);
-        $superAdmin->assignRole($superAdminRole);
+        // $bendaharaRole->syncPermissions([
+        //     'realization.view','realization.create','realization.edit',
+        //     'attachment.view','attachment.create',
+        // ]);
 
-        $admin = User::create([
-            'name' => 'Admin User',
-            'email' => 'admin@example.com',
-            'password' => Hash::make('password'),
-        ]);
-        $admin->assignRole($adminRole);
+        // Create default users if missing and assign roles
+        $superAdmin = User::firstOrCreate(
+            ['email' => env('SEED_SUPERADMIN_EMAIL', 'superadmin@example.com')],
+            [
+                'name' => 'Super Admin',
+                'password' => Hash::make(env('SEED_SUPERADMIN_PASSWORD', 'password')),
+                'active' => true,
+            ]
+        );
+        if (!$superAdmin->hasRole($superAdminRole)) {
+            $superAdmin->syncRoles([$superAdminRole]);
+        }
 
-        $manager = User::create([
-            'name' => 'Manager User',
-            'email' => 'manager@example.com',
-            'password' => Hash::make('password'),
-        ]);
-        $manager->assignRole($managerRole);
+        // $admin = User::firstOrCreate(
+        //     ['email' => env('SEED_ADMIN_EMAIL', 'admin@example.com')],
+        //     [
+        //         'name' => 'Administrator',
+        //         'password' => Hash::make(env('SEED_ADMIN_PASSWORD', 'password')),
+        //         'active' => true,
+        //     ]
+        // );
+        // if (!$admin->hasRole($adminRole)) {
+        //     $admin->syncRoles([$adminRole]);
+        // }
 
-        $regularUser = User::create([
-            'name' => 'Regular User',
-            'email' => 'user@example.com',
-            'password' => Hash::make('password'),
-        ]);
-        $regularUser->assignRole($userRole);
+        $planner = User::firstOrCreate(
+            ['email' => env('SEED_PLANNER_EMAIL', 'planner@example.com')],
+            [
+                'name' => 'Perencana',
+                'password' => Hash::make(env('SEED_PLANNER_PASSWORD', 'password')),
+                'active' => true,
+            ]
+        );
+        if (!$planner->hasRole($perencanaRole)) {
+            $planner->syncRoles([$perencanaRole]);
+        }
     }
 }
