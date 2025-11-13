@@ -17,7 +17,10 @@ use App\Livewire\Auth\PendingActivation;
 use App\Http\Controllers\ProposalPdfController;
 
 Route::get('/', function () {
-    return view('welcome');
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
+    return redirect()->route('login');
 })->name('home');
 
 Route::get('/dashboard', Dashboard::class)
