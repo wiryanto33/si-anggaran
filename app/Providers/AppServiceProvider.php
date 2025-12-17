@@ -8,6 +8,7 @@ use App\Models\ProposalItem;
 use App\Observers\AnnualBudgetItemObserver;
 use App\Observers\ProposalItemObserver;
 use App\Observers\ProposalObserver;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -25,6 +26,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if (app()->environment('production')) {
+            URL::forceScheme('https');
+        }
+
         ProposalItem::observe(ProposalItemObserver::class);
         AnnualBudgetItem::observe(AnnualBudgetItemObserver::class);
         Proposal::observe(ProposalObserver::class);
