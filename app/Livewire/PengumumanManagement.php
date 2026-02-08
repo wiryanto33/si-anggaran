@@ -25,7 +25,7 @@ class PengumumanManagement extends Component
     protected $rules = [
         'judul' => 'required|string|max:255',
         'deskripsi' => 'required|string',
-        'file' => 'nullable|file|max:10240', // 10MB, any file type
+        'file' => 'nullable|mimes:pdf|max:10240', // 10MB, any file type
         'aktif' => 'boolean',
         'publish_at' => 'nullable|date',
     ];

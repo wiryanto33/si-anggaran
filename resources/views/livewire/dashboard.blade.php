@@ -193,22 +193,26 @@
     <div class="mt-8 bg-gray-100 dark:bg-neutral-900 shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
             <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">Pengumuman</h3>
-            @if(isset($pengumuman) && $pengumuman->count())
+            @if (isset($pengumuman) && $pengumuman->count())
                 <ul class="divide-y divide-gray-200 dark:divide-gray-700">
                     @foreach ($pengumuman as $p)
                         <li class="py-3 flex items-start justify-between">
                             <div>
-                                <button type="button" wire:click="openPengumuman({{ $p->id }})" class="font-medium text-left text-blue-600 dark:text-blue-400 hover:underline">
+                                <button type="button" wire:click="openPengumuman({{ $p->id }})"
+                                    class="font-medium text-left text-blue-600 dark:text-blue-400 hover:underline">
                                     {{ $p->judul }}
                                 </button>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">{{ Str::limit($p->deskripsi, 120) }}</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">
+                                    {{ Str::limit($p->deskripsi, 120) }}</p>
                                 <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                                    Dipublikasikan: {{ $p->publish_at ? $p->publish_at->format('d M Y H:i') : $p->created_at->format('d M Y H:i') }}
+                                    Dipublikasikan:
+                                    {{ $p->publish_at ? $p->publish_at->format('d M Y H:i') : $p->created_at->format('d M Y H:i') }}
                                 </p>
                             </div>
                             <div class="ml-4">
-                                @if($p->file)
-                                    <a href="{{ asset('storage/'.$p->file) }}" target="_blank" class="text-blue-600 dark:text-blue-400 underline">Lampiran</a>
+                                @if ($p->file)
+                                    <a href="{{ asset('storage/' . $p->file) }}" target="_blank"
+                                        class="text-blue-600 dark:text-blue-400 underline">Lampiran</a>
                                 @endif
                             </div>
                         </li>
@@ -225,31 +229,68 @@
         </div>
     </div>
 
-    @if($showPengumumanModal && $selectedPengumuman)
-        <div class="fixed inset-0 z-50 backdrop-blur-sm bg-black/30 flex items-center justify-center p-4">
-            <div class="w-full max-w-2xl rounded-md bg-white dark:bg-gray-800 shadow-lg">
-                <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $selectedPengumuman['judul'] }}</h4>
-                    <button type="button" wire:click="closePengumuman" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">✕</button>
+    {{-- resources/views/livewire/dashboard.blade.php --}}
+
+    @if ($showPengumumanModal && $selectedPengumuman)
+        <div
+            class="fixed inset-0 z-50 overflow-y-auto backdrop-blur-sm bg-black/40 flex items-center justify-center p-4">
+            <div
+                class="relative w-full max-w-4xl max-h-[90vh] flex flex-col rounded-xl bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700">
+
+                <div
+                    class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-t-xl">
+                    <div>
+                        <h4 class="text-xl font-bold text-gray-900 dark:text-white">{{ $selectedPengumuman['judul'] }}
+                        </h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            Dipublikasikan:
+                            {{ \Carbon\Carbon::parse($selectedPengumuman['publish_at'] ?? $selectedPengumuman['created_at'])->format('d M Y H:i') }}
+                        </p>
+                    </div>
+                    <button type="button" wire:click="closePengumuman"
+                        class="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
                 </div>
-                <div class="p-4 space-y-3">
-                    <div class="prose dark:prose-invert max-w-none text-gray-800 dark:text-gray-100">
+
+                <div class="p-6 overflow-y-auto space-y-4 flex-1">
+                    <div class="prose dark:prose-invert max-w-none text-gray-800 dark:text-gray-200">
                         {!! nl2br(e($selectedPengumuman['deskripsi'])) !!}
                     </div>
-                    <div class="text-sm text-gray-500 dark:text-gray-400">
-                        @php($tz = config('app.ui_timezone', 'Asia/Jakarta'))
-                        @php($published = $selectedPengumuman['publish_at'] ? \Carbon\Carbon::parse($selectedPengumuman['publish_at'])->setTimezone($tz)->format('d M Y H:i') : \Carbon\Carbon::parse($selectedPengumuman['created_at'])->setTimezone($tz)->format('d M Y H:i'))
-                        Dipublikasikan: {{ $published }}
-                    </div>
-                    @if(!empty($selectedPengumuman['file']))
-                        <div>
-                            <a href="{{ asset('storage/'.$selectedPengumuman['file']) }}" target="_blank" class="text-blue-600 dark:text-blue-400 underline">Buka Lampiran</a>
+
+                    @if (!empty($selectedPengumuman['file']))
+                        <div class="mt-4 border-t pt-4">
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Dokumen
+                                Lampiran:</label>
+                            <div class="w-full bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden"
+                                style="height: 60vh;">
+                                <embed src="{{ asset('storage/' . $selectedPengumuman['file']) }}"
+                                    type="application/pdf" width="100%" height="100%" />
+                            </div>
                         </div>
                     @endif
                 </div>
-                <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
-                    <button type="button" wire:click="closePengumuman" class="px-4 py-2 rounded bg-gray-600 hover:bg-gray-700 text-white">Tutup</button>
+
+                <div
+                    class="flex items-center justify-end p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-b-xl gap-3">
+                    @if (!empty($selectedPengumuman['file']))
+                        <a href="{{ asset('storage/' . $selectedPengumuman['file']) }}" download
+                            class="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-all">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            Download PDF
+                        </a>
+                    @endif
+                    <button type="button" wire:click="closePengumuman"
+                        class="px-5 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-all">
+                        Tutup
+                    </button>
                 </div>
+
             </div>
         </div>
     @endif
