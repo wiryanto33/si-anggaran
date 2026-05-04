@@ -16,6 +16,13 @@
         </div>
     @endif
 
+    @if (session()->has('error'))
+        <div
+            class="bg-red-100 dark:bg-red-800 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-200 px-4 py-3 rounded mb-4">
+            {{ session('error') }}
+        </div>
+    @endif
+
     <div class="bg-gray-100 dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead class="">
@@ -77,7 +84,7 @@
                                 </button>
                             @endcan
                             @can('user.delete')
-                                <button wire:click="delete({{ $user->id }})" onclick="return confirm('Are you sure?')"
+                                <button wire:click="delete({{ $user->id }})" onclick="return confirm('Apakah Anda yakin?')"
                                     class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200">
                                     Delete
                                 </button>

@@ -106,14 +106,58 @@ class UserManagement extends Component
 
         $this->resetForm();
         $this->showModal = false;
-        session()->flash('message', 'User saved successfully!');
+        session()->flash('message', 'User berhasil disimpan!');
     }
 
     public function delete($id)
     {
         $this->authorize('user.delete');
-        User::findOrFail($id)->delete();
-        session()->flash('message', 'User deleted successfully!');
+
+        if ($id === auth()->id()) {
+            session()->flash('error', 'Anda tidak dapat menghapus akun Anda sendiri!');
+            return;
+        }
+
+        try {
+            $user = User::findOrFail($id);
+
+            // Bersihkan data terkait (Proposal & Approval) secara cascade
+            // Dilakukan tanpa pengecekan role untuk memastikan semua data referensi dihapus
+            \Illuminate\Support\Facades\DB::transaction(function () use ($user) {
+                // Ambil semua proposal miliknya (termasuk yang soft-deleted)
+                $proposals = \App\Models\Proposal::where('perencana_id', $user->id)->withTrashed()->get();
+                foreach ($proposals as $proposal) {
+                    // Hapus file lampiran jika ada
+                    foreach ($proposal->attachments as $attachment) {
+                        if (Storage::disk('public')->exists($attachment->path)) {
+                            Storage::disk('public')->delete($attachment->path);
+                        }
+                        $attachment->delete();
+                    }
+                    // Force delete proposal untuk menghapus permanen dari DB 
+                    $proposal->forceDelete();
+                }
+
+                // Hapus approval yang dilakukan oleh user ini sebagai aktor (jika ada)
+                \App\Models\Approval::where('actor_id', $user->id)->delete();
+            });
+
+            // Delete avatar if exists
+            if (!empty($user->avatar)) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+
+            $user->delete();
+            session()->flash('message', 'User berhasil dihapus!');
+        } catch (\Illuminate\Database\QueryException $e) {
+            if ($e->getCode() == "23000") { // Integrity constraint violation
+                session()->flash('error', 'User tidak dapat dihapus karena memiliki data terkait di tabel lain (seperti Realisasi Anggaran). Silakan hapus data tersebut terlebih dahulu.');
+            } else {
+                session()->flash('error', 'Terjadi kesalahan saat menghapus user.');
+            }
+        } catch (\Exception $e) {
+            session()->flash('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 
     public function closeModal()
