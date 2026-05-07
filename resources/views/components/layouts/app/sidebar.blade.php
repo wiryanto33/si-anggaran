@@ -19,7 +19,7 @@
         <flux:sidebar.toggle class="lg:hidden" icon="x-mark" />
 
         <a href="{{ route('dashboard') }}" class="flex w-full items-center justify-center py-4" wire:navigate>
-            <img src="{{ asset('img/koarmada.png') }}" alt="Koarmada" class="h-35 w-auto" />
+            <x-app-logo-icon class="h-10 w-auto" />
         </a>
 
         <flux:navlist variant="outline">

@@ -17,6 +17,8 @@ class Appearance extends Component
     public array $loginImages = []; // new uploads
     public array $currentLoginImages = []; // stored list
     public int $loginOverlay = 50;
+    public $logo; // uploaded logo
+    public $currentLogo; // current logo path
 
     private function ensureSuperAdmin(): void
     {
@@ -32,6 +34,7 @@ class Appearance extends Component
         $this->overlay = (int) (Setting::get('background_overlay', 30));
         $this->currentLoginImages = json_decode((string) Setting::get('login_carousel_images', '[]'), true) ?: [];
         $this->loginOverlay = (int) (Setting::get('login_carousel_overlay', 50));
+        $this->currentLogo = Setting::get('app_logo');
     }
 
     public function save(): void
@@ -140,11 +143,45 @@ class Appearance extends Component
         Setting::set('login_carousel_images', json_encode($this->currentLoginImages));
     }
 
+    public function saveLogo(): void
+    {
+        $this->ensureSuperAdmin();
+        $this->validate([
+            'logo' => 'required|image|mimes:jpg,jpeg,png,webp,svg|max:2048',
+        ]);
+
+        $old = Setting::get('app_logo');
+
+        $path = $this->logo->store('logos', 'public');
+        Setting::set('app_logo', $path);
+
+        if ($old && $old !== $path && Storage::disk('public')->exists($old)) {
+            Storage::disk('public')->delete($old);
+        }
+
+        $this->currentLogo = $path;
+        $this->logo = null;
+        session()->flash('message', 'Logo updated.');
+    }
+
+    public function clearLogo(): void
+    {
+        $this->ensureSuperAdmin();
+        $old = Setting::get('app_logo');
+        if ($old && Storage::disk('public')->exists($old)) {
+            Storage::disk('public')->delete($old);
+        }
+        Setting::set('app_logo', null);
+        $this->currentLogo = null;
+        session()->flash('message', 'Logo cleared.');
+    }
+
     public function render()
     {
         $this->ensureSuperAdmin();
         return view('livewire.settings.appearance', [
             'bgUrl' => $this->currentBackground ? asset('storage/' . $this->currentBackground) : null,
+            'logoUrl' => $this->currentLogo ? asset('storage/' . $this->currentLogo) : null,
         ]);
     }
 }

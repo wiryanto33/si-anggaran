@@ -10,6 +10,40 @@
 
         <div class="grid gap-6">
             <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">App Logo</label>
+                <div class="mt-2 flex items-start gap-4">
+                    <div class="relative w-full">
+                        @php($logoName = $logo ? $logo->getClientOriginalName() ?? '1 file selected' : null)
+                        <input type="text" readonly value="{{ $logoName ?? '' }}" placeholder="No file chosen"
+                            class="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 pr-24 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-white" />
+                        <label for="logoFile"
+                            class="absolute inset-y-0 right-0 m-1 inline-flex items-center justify-center rounded-md bg-zinc-200 px-3 text-sm font-medium text-zinc-800 dark:bg-zinc-700 dark:text-white">
+                            Browse
+                        </label>
+                        <input id="logoFile" type="file" wire:model="logo" accept="image/*" class="sr-only" />
+                    </div>
+
+                    <flux:button wire:click="saveLogo" variant="primary">Save</flux:button>
+                    <flux:button wire:click="clearLogo" variant="ghost">Clear</flux:button>
+                </div>
+                @error('logo')
+                    <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+                @enderror
+
+                <div wire:loading wire:target="logo" class="mt-2 text-sm text-gray-500">Uploading...</div>
+
+                @if ($logoUrl)
+                    <div class="mt-4">
+                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Current Logo Preview</label>
+                        <div class="inline-block p-2 bg-zinc-100 dark:bg-zinc-800 rounded border border-zinc-200 dark:border-zinc-700">
+                            <img src="{{ $logoUrl }}" alt="Logo Preview" class="h-16 w-auto object-contain" />
+                        </div>
+                    </div>
+                @endif
+            </div>
+
+            <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
+            <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Background Image</label>
                 <div class="mt-2 flex items-start gap-4">
                     <div class="relative w-full">
