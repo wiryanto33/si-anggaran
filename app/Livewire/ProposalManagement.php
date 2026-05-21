@@ -89,11 +89,21 @@ class ProposalManagement extends Component
             $this->satuan_id = auth()->user()->satuan_id;
         }
         $this->tahun = (int) date('Y');
-        $this->tanggal_pengajuan = null;
+        
+        $lastProposal = Proposal::where('kode_usulan', 'like', 'AL%')->orderBy('id', 'desc')->first();
+        if ($lastProposal) {
+            $lastNumber = (int) substr($lastProposal->kode_usulan, 2);
+            $this->kode_usulan = 'AL' . str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
+        } else {
+            $this->kode_usulan = 'AL001';
+        }
+        
+        $this->tanggal_pengajuan = date('Y-m-d');
         $this->status = 'draft';
         $this->total_rencana = 0;
         $this->items = [[
             'id' => null,
+            'kode_ma' => '',
             'uraian' => '',
             'qty' => 1,
             'satuan' => '',
@@ -124,6 +134,7 @@ class ProposalManagement extends Component
         $this->total_rencana = $p->total_rencana;
         $this->items = $p->items()->orderBy('id')->get()->map(fn($it) => [
             'id' => $it->id,
+            'kode_ma' => $it->kode_ma ?? '',
             'uraian' => $it->uraian,
             'qty' => (float) $it->qty,
             'satuan' => $it->satuan,
@@ -173,7 +184,7 @@ class ProposalManagement extends Component
             'kode_usulan' => $this->kode_usulan,
             'judul' => $this->judul,
             'deskripsi' => $this->deskripsi,
-            'tahun' => (int) $this->tahun,
+            'tahun' => $this->tanggal_pengajuan ? (int) date('Y', strtotime($this->tanggal_pengajuan)) : (int) date('Y'),
             'tanggal_pengajuan' => $this->tanggal_pengajuan ?: null,
             'status' => $this->status,
             'total_rencana' => $this->total_rencana ?? 0,
@@ -201,6 +212,7 @@ class ProposalManagement extends Component
             $harga = (float) ($row['harga_satuan'] ?? 0);
             $subtotal = round($qty * $harga, 2);
             $data = [
+                'kode_ma' => (string)($row['kode_ma'] ?? ''),
                 'uraian' => $uraian,
                 'qty' => $qty,
                 'satuan' => (string)($row['satuan'] ?? ''),
@@ -268,7 +280,7 @@ class ProposalManagement extends Component
 
     public function addItemRow(): void
     {
-        $this->items[] = ['id' => null, 'uraian' => '', 'qty' => 1, 'satuan' => '', 'harga_satuan' => 0, 'subtotal' => 0];
+        $this->items[] = ['id' => null, 'kode_ma' => '', 'uraian' => '', 'qty' => 1, 'satuan' => '', 'harga_satuan' => 0, 'subtotal' => 0];
     }
 
     public function removeItemRow(int $index): void
@@ -342,6 +354,7 @@ class ProposalManagement extends Component
             'total_rencana' => (float)$p->total_rencana,
         ];
         $this->detailItems = $p->items->map(fn($it) => [
+            'kode_ma' => $it->kode_ma ?? '',
             'uraian' => $it->uraian,
             'qty' => (float)$it->qty,
             'satuan' => $it->satuan,

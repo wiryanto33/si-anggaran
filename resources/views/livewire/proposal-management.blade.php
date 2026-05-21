@@ -196,12 +196,13 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Kode
                                 Usulan</label>
-                            <input type="text" wire:model="kode_usulan"
-                                class="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                            <input type="text" wire:model="kode_usulan" disabled readonly
+                                class="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white">
                             @error('kode_usulan')
                                 <span class="text-red-500 text-sm">{{ $message }}</span>
                             @enderror
                         </div>
+
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Judul</label>
@@ -255,19 +256,10 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Tahun</label>
-                            <input type="number" wire:model="tahun" min="2000" max="2100"
-                                class="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-                            @error('tahun')
-                                <span class="text-red-500 text-sm">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Tanggal
                                 Pengajuan</label>
-                            <input type="date" wire:model="tanggal_pengajuan"
-                                class="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                            <input type="date" wire:model="tanggal_pengajuan" disabled readonly
+                                class="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white">
                             @error('tanggal_pengajuan')
                                 <span class="text-red-500 text-sm">{{ $message }}</span>
                             @enderror
@@ -342,6 +334,7 @@
                                 <table class="min-w-full text-sm">
                                     <thead class="bg-gray-50 dark:bg-gray-700">
                                         <tr>
+                                            <th class="px-3 py-2 text-left">Kode MA</th>
                                             <th class="px-3 py-2 text-left">Uraian</th>
                                             <th class="px-3 py-2 text-right">Qty</th>
                                             <th class="px-3 py-2 text-left">Satuan</th>
@@ -354,6 +347,12 @@
                                         @foreach ($items as $i => $row)
                                             <tr class="border-t border-gray-200 dark:border-gray-700"
                                                 wire:key="pi-{{ $i }}">
+                                                <td class="px-3 py-2">
+                                                    <input type="text"
+                                                        wire:model="items.{{ $i }}.kode_ma"
+                                                        placeholder="Kode MA"
+                                                        class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                                                </td>
                                                 <td class="px-3 py-2">
                                                     <input type="text"
                                                         wire:model="items.{{ $i }}.uraian"
@@ -496,6 +495,7 @@
                             <table class="min-w-full text-sm">
                                 <thead class="bg-gray-50 dark:bg-gray-700">
                                     <tr>
+                                        <th class="px-3 py-2 text-left">Kode MA</th>
                                         <th class="px-3 py-2 text-left">Uraian</th>
                                         <th class="px-3 py-2 text-right">Qty</th>
                                         <th class="px-3 py-2 text-left">Satuan</th>
@@ -506,6 +506,7 @@
                                 <tbody>
                                     @forelse($detailItems as $row)
                                         <tr class="border-t border-gray-200 dark:border-gray-700">
+                                            <td class="px-3 py-2">{{ $row['kode_ma'] ?? '-' }}</td>
                                             <td class="px-3 py-2">{{ $row['uraian'] }}</td>
                                             <td class="px-3 py-2 text-right">
                                                 {{ number_format((float) $row['qty'], 2, ',', '.') }}</td>
@@ -517,7 +518,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="5" class="px-3 py-2 text-center text-gray-500">Tidak ada
+                                            <td colspan="6" class="px-3 py-2 text-center text-gray-500">Tidak ada
                                                 item</td>
                                         </tr>
                                     @endforelse

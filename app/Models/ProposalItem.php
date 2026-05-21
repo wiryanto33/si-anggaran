@@ -8,6 +8,7 @@ class ProposalItem extends Model
 {
     protected $fillable = [
         'proposal_id',
+        'kode_ma',
         'uraian',
         'qty',
         'satuan',
