@@ -63,7 +63,8 @@
     <table class="items">
         <thead>
             <tr>
-                <th style="width:45%">Uraian</th>
+                <th style="width:15%">MA</th>
+                <th style="width:30%">Uraian</th>
                 <th style="width:10%">Qty</th>
                 <th style="width:15%">Satuan</th>
                 <th style="width:15%">Harga Satuan</th>
@@ -73,6 +74,7 @@
         <tbody>
         @forelse($proposal->items as $it)
             <tr>
+                <td>{{ $it->kode_ma }}</td>
                 <td>{{ $it->uraian }}</td>
                 <td style="text-align:right">{{ number_format((float)$it->qty, 2, ',', '.') }}</td>
                 <td>{{ $it->satuan }}</td>
@@ -80,7 +82,7 @@
                 <td style="text-align:right">{{ rupiah($it->subtotal) }}</td>
             </tr>
         @empty
-            <tr><td colspan="5" class="muted">Tidak ada item</td></tr>
+            <tr><td colspan="6" class="muted">Tidak ada item</td></tr>
         @endforelse
         </tbody>
     </table>
