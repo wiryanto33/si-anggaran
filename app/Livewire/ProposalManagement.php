@@ -90,7 +90,7 @@ class ProposalManagement extends Component
         }
         $this->tahun = (int) date('Y');
         
-        $lastProposal = Proposal::where('kode_usulan', 'like', 'AL%')->orderBy('id', 'desc')->first();
+        $lastProposal = Proposal::withTrashed()->where('kode_usulan', 'like', 'AL%')->orderBy('id', 'desc')->first();
         if ($lastProposal) {
             $lastNumber = (int) substr($lastProposal->kode_usulan, 2);
             $this->kode_usulan = 'AL' . str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
